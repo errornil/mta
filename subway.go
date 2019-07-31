@@ -11,18 +11,18 @@ import (
 	"github.com/golang/protobuf/proto"
 )
 
-type Line int
+type Feed int
 
 const (
-	Line123456S Line = 1  // Red
-	LineACEHS   Line = 26 // Blue, Franklin Ave. Shuttle
-	LineNQRW    Line = 16 // Yellow
-	LineBDFM    Line = 21 // Orange
-	LineL       Line = 2
-	LineSIR     Line = 11 // StatenIslandRailway
-	LineG       Line = 31
-	LineJZ      Line = 36 // Brown
-	Line7       Line = 51
+	Feed123456S Feed = 1  // Red
+	FeedACEHS   Feed = 26 // Blue, Franklin Ave. Shuttle
+	FeedNQRW    Feed = 16 // Yellow
+	FeedBDFM    Feed = 21 // Orange
+	FeedL       Feed = 2
+	FeedSIR     Feed = 11 // StatenIslandRailway
+	FeedG       Feed = 31
+	FeedJZ      Feed = 36 // Brown
+	Feed7       Feed = 51
 
 	feedURL = "http://datamine.mta.info/mta_esi.php"
 )
@@ -41,7 +41,7 @@ func NewSubwayTimeClient(apiKey string, timeout time.Duration) *SubwayTimeClient
 	}
 }
 
-func (c *SubwayTimeClient) GetFeedMessage(feedID Line) (*gtfs.FeedMessage, error) {
+func (c *SubwayTimeClient) GetFeedMessage(feedID Feed) (*gtfs.FeedMessage, error) {
 	resp, err := c.client.Get(fmt.Sprintf("%s?key=%s&feed_id=%d", feedURL, c.apiKey, feedID))
 	if err != nil {
 		return nil, fmt.Errorf("failed to send GET request: %v", err)
