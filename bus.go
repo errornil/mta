@@ -23,7 +23,7 @@ const (
 
 type BusTimeService interface {
 	GetStopMonitoring(stopID string) (*StopMonitoringResponse, error)
-	GetStopMonitoringWithDetailLevel(stopID string, detailLevel DetailLevel)
+	GetStopMonitoringWithDetailLevel(stopID string, detailLevel DetailLevel) (*StopMonitoringResponse, error)
 }
 
 type BusTimeClient struct {
