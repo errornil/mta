@@ -21,6 +21,11 @@ const (
 	calls   DetailLevel = "calls"
 )
 
+type BusTimeService interface {
+	GetStopMonitoring(stopID string) (*StopMonitoringResponse, error)
+	GetStopMonitoringWithDetailLevel(stopID string, detailLevel DetailLevel)
+}
+
 type BusTimeClient struct {
 	apiKey string
 	client *http.Client

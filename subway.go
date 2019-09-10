@@ -27,6 +27,10 @@ const (
 	feedURL = "http://datamine.mta.info/mta_esi.php"
 )
 
+type SubwayTimeService interface {
+	GetFeedMessage(feedID Feed) (*gtfs.FeedMessage, error)
+}
+
 type SubwayTimeClient struct {
 	apiKey string
 	client *http.Client
