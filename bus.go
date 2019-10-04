@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"log"
 	"net/http"
 	"net/url"
 	"time"
@@ -53,7 +52,7 @@ func (c *BusTimeClient) GetStopMonitoringWithDetailLevel(stopID string, detailLe
 	v.Add("StopMonitoringDetailLevel", string(detailLevel))
 
 	url := fmt.Sprintf("%s?%s", stopMonitoringURL, v.Encode())
-	log.Println(url)
+
 	resp, err := c.client.Get(url)
 	if err != nil {
 		return nil, fmt.Errorf("failed to send GetStopMonitoring request: %v", err)
