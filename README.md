@@ -26,7 +26,7 @@ resp, err := client.GetFeedMessage(mta.Line123456S)
 
 ### ProtoBuf
 
-MTA uses realtime-GTFS with their own extension for subway feeds.
+MTA uses realtime-GTFS with their own [extension for subway feeds](http://datamine.mta.info/sites/all/files/pdfs/nyct-subway.proto.txt).
 To re-regenerate generatated code run following command with [protoc](https://github.com/protocolbuffers/protobuf):
 
 ```bash
