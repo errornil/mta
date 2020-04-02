@@ -2,11 +2,9 @@
 
 The library that provides an interface to MTA Real-Time Data Feeds.
 
-### Accept [agreement](http://web.mta.info/developers/developer-data-terms.html)
-
 ## Subway (GTFS-realtime feeds)
 
-### [Register to get API key](http://datamine.mta.info/user/register)
+### Read and Accept [agreement](https://api.mta.info/#/DataFeedAgreement)
 
 ### Example
 
@@ -14,7 +12,7 @@ The library that provides an interface to MTA Real-Time Data Feeds.
 import "github.com/chuhlomin/mta"
 
 client := mta.NewSubwayClient(
-    "53b2c13dbc574e8cb4bf964dd2a215e2", // API Key (this is a fake one)
+    "53b2c13dbc574e8cb4bf964dd2a215e253b2c13d", // API Key (this is a fake one)
     10*time.Seconds, // HTTP client timeout
 )
 
@@ -35,6 +33,8 @@ protoc --go_out=../transit_realtime gtfs-realtime.proto nyct-subway.proto
 ```
 
 ## Bus Times
+
+### Read and Accept [agreement](http://web.mta.info/developers/developer-data-terms.html)
 
 ### [Request API key](http://spreadsheets.google.com/viewform?hl=en&formkey=dG9kcGIxRFpSS0NhQWM4UjA0V0VkNGc6MQ#gid=0)
 
