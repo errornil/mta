@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"time"
 
 	gtfs "github.com/chuhlomin/mta/v2/transit_realtime"
@@ -82,8 +83,8 @@ func NewFeedsClient(apiKey string, timeout time.Duration) *FeedsClient {
 
 // GetFeedMessage sends request to MTA server to get latest GTFS-Realtime data from specified feed
 func (f *FeedsClient) GetFeedMessage(feedID Feed) (*gtfs.FeedMessage, error) {
-	url := fmt.Sprintf("%s%s", feedURL, feedID)
-	req, err := http.NewRequest("GET", url, nil)
+	u := fmt.Sprintf("%s%s", feedURL, url.PathEscape(string(feedID)))
+	req, err := http.NewRequest("GET", u, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create new HTTP request")
 	}
