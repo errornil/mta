@@ -2,10 +2,12 @@ package mta
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"net/url"
+
+	"github.com/pkg/errors"
 )
 
 type DetailLevel string
@@ -25,20 +27,22 @@ type BusTimeService interface {
 }
 
 type BusTimeClient struct {
-	apiKey string
-	client HTTPClient
+	client    HTTPClient
+	apiKey    string
+	userAgent string
 }
 
-func NewBusTimeClient(apiKey string, client HTTPClient) (*BusTimeClient, error) {
-	if apiKey == "" {
-		return nil, ErrAPIKeyRequired
-	}
+func NewBusTimeClient(client HTTPClient, apiKey, userAgent string) (*BusTimeClient, error) {
 	if client == nil {
 		return nil, ErrClientRequired
 	}
+	if apiKey == "" {
+		return nil, ErrAPIKeyRequired
+	}
 	return &BusTimeClient{
-		apiKey: apiKey,
-		client: client,
+		apiKey:    apiKey,
+		userAgent: userAgent,
+		client:    client,
 	}, nil
 }
 
@@ -56,7 +60,13 @@ func (c *BusTimeClient) GetStopMonitoringWithDetailLevel(stopID string, detailLe
 
 	url := fmt.Sprintf("%s?%s", StopMonitoringURL, v.Encode())
 
-	resp, err := c.client.Get(url)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create new HTTP request")
+	}
+	req.Header.Add("User-Agent", c.userAgent)
+
+	resp, err := c.client.Do(req)
 	if err != nil {
 		return nil, fmt.Errorf("failed to send GetStopMonitoring request: %v", err)
 	}

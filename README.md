@@ -1,6 +1,6 @@
 # mta
 
-The library that provides an interface to MTA Real-Time Data Feeds.
+`mta` is the library that provides an interface to MTA Real-Time Data Feeds.
 
 ## Subway (GTFS-realtime feeds)
 
@@ -9,20 +9,21 @@ The library that provides an interface to MTA Real-Time Data Feeds.
 ### Example
 
 ```go
-import "github.com/chuhlomin/mta"
+import "github.com/errornil/mta"
 
 client := mta.NewSubwayClient(
-    "53b2c13dbc574e8cb4bf964dd2a215e253b2c13d", // API Key (this is a fake one)
     &http.Client{
         Timeout: 30 * time.Second,
     },
+    "53b2c13dbc574e8cb4bf964dd2a215e253b2c13d", // API Key (this is a fake one)
+    "github.com/errornil/mta:v2.0",
 )
 
 resp, err := client.GetFeedMessage(mta.Line123456S)
 // check err
 ```
 
-`resp` has type [FeedMessage](https://github.com/chuhlomin/mta/blob/master/transit_realtime/gtfs-realtime.pb.go#L488-L506) (generated).
+`resp` has type [FeedMessage](https://github.com/errornil/mta/blob/master/transit_realtime/gtfs-realtime.pb.go#L488-L506) (generated).
 
 ### ProtoBuf
 
@@ -43,20 +44,21 @@ protoc --go_out=../transit_realtime gtfs-realtime.proto nyct-subway.proto
 ### Example
 
 ```go
-import "github.com/chuhlomin/mta"
+import "github.com/errornil/mta"
 
 client := mta.NewBusTimeClient(
-    "fa05aa30-3c71-4953-91c8-65b46c6e5f78", // API Key (this is a fake one)
     &http.Client{
         Timeout: 30 * time.Second,
     },
+    "fa05aa30-3c71-4953-91c8-65b46c6e5f78", // API Key (this is a fake one)
+    "github.com/errornil/mta:v2.0",
 )
 
 resp, err := client.GetStopMonitoring(400933) // 400933 is the stop ID for "AV OF THE AMERICANS/W 34 ST" bus stop
 // check err
 ```
 
-`resp` has type [StopMonitoringResponse](https://github.com/chuhlomin/mta/blob/master/structs.go#L3-L5).
+`resp` has type [StopMonitoringResponse](https://github.com/errornil/mta/blob/master/structs.go#L3-L5).
 
 ## Legal
 

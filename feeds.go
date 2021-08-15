@@ -66,21 +66,23 @@ type FeedsService interface {
 // FeedsClient provides MTA GTFS-Realtime data
 // Implements FeedsService interface.
 type FeedsClient struct {
-	apiKey string
-	client HTTPClient
+	client    HTTPClient
+	apiKey    string
+	userAgent string
 }
 
 // NewFeedsClient creates new FeedsClient
-func NewFeedsClient(apiKey string, client HTTPClient) (*FeedsClient, error) {
-	if apiKey == "" {
-		return nil, ErrAPIKeyRequired
-	}
+func NewFeedsClient(client HTTPClient, apiKey, userAgent string) (*FeedsClient, error) {
 	if client == nil {
 		return nil, ErrClientRequired
 	}
+	if apiKey == "" {
+		return nil, ErrAPIKeyRequired
+	}
 	return &FeedsClient{
-		apiKey: apiKey,
-		client: client,
+		client:    client,
+		apiKey:    apiKey,
+		userAgent: userAgent,
 	}, nil
 }
 

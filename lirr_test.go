@@ -17,12 +17,12 @@ func b(v bool) *bool {
 }
 
 func TestLIRRErrClientRequired(t *testing.T) {
-	_, err := NewLIRRClient(nil)
+	_, err := NewLIRRClient(nil, "")
 	require.Error(t, err, ErrClientRequired)
 }
 
 func TestDepartures(t *testing.T) {
-	GetFunc = func(url string) (*http.Response, error) {
+	DoFunc = func(req *http.Request) (*http.Response, error) {
 		json := `{
 			"LOC": "NYK",
 			"TIME": "08/15/2021 14:48:01",
@@ -51,7 +51,7 @@ func TestDepartures(t *testing.T) {
 		}, nil
 	}
 
-	c, err := NewLIRRClient(mockClient{})
+	c, err := NewLIRRClient(mockClient{}, "")
 	require.NoError(t, err)
 
 	d, err := c.Departures("NYK")
@@ -83,11 +83,11 @@ func TestDepartures(t *testing.T) {
 }
 
 func TestDeparturesErrRequestSend(t *testing.T) {
-	GetFunc = func(url string) (*http.Response, error) {
+	DoFunc = func(req *http.Request) (*http.Response, error) {
 		return nil, net.UnknownNetworkError("...")
 	}
 
-	c, err := NewLIRRClient(mockClient{})
+	c, err := NewLIRRClient(mockClient{}, "")
 	require.NoError(t, err)
 
 	_, err = c.Departures("NYK")
@@ -99,14 +99,14 @@ func TestDeparturesErrReadBody(t *testing.T) {
 	mockReadCloser.On("Read", mock.AnythingOfType("[]uint8")).Return(0, fmt.Errorf("error reading"))
 	mockReadCloser.On("Close").Return(nil)
 
-	GetFunc = func(url string) (*http.Response, error) {
+	DoFunc = func(req *http.Request) (*http.Response, error) {
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       &mockReadCloser,
 		}, nil
 	}
 
-	c, err := NewLIRRClient(mockClient{})
+	c, err := NewLIRRClient(mockClient{}, "")
 	require.NoError(t, err)
 
 	_, err = c.Departures("NYK")
@@ -114,14 +114,14 @@ func TestDeparturesErrReadBody(t *testing.T) {
 }
 
 func TestDeparturesErrBadResponse(t *testing.T) {
-	GetFunc = func(url string) (*http.Response, error) {
+	DoFunc = func(req *http.Request) (*http.Response, error) {
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewReader([]byte("not JSON"))),
 		}, nil
 	}
 
-	c, err := NewLIRRClient(mockClient{})
+	c, err := NewLIRRClient(mockClient{}, "")
 	require.NoError(t, err)
 
 	_, err = c.Departures("NYK")

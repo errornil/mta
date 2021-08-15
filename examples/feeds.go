@@ -17,10 +17,11 @@ func main() {
 
 func run() error {
 	client, err := mta.NewFeedsClient(
-		"lKTSZpn9bX58Nmg11rHhX1dsKaBpoFakmMSuqeh0",
 		&http.Client{
 			Timeout: 30 * time.Second,
 		},
+		"lKTSZpn9bX58Nmg11rHhX1dsKaBpoFakmMSuqeh0",
+		"github.com/errornil/mta:v2.0",
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed to get feed message")

@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"net/url"
 
 	"github.com/pkg/errors"
@@ -16,7 +17,8 @@ type LIRRService interface {
 }
 
 type LIRRClient struct {
-	client HTTPClient
+	client    HTTPClient
+	userAgent string
 }
 
 type DeparturesResponse struct {
@@ -41,12 +43,15 @@ type DeparturesResponseTrain struct {
 }
 
 // NewLIRRClient creates new LIRRClient
-func NewLIRRClient(client HTTPClient) (*LIRRClient, error) {
+func NewLIRRClient(client HTTPClient, userAgent string) (*LIRRClient, error) {
 	if client == nil {
 		return nil, ErrClientRequired
 	}
 
-	return &LIRRClient{client: client}, nil
+	return &LIRRClient{
+		client:    client,
+		userAgent: userAgent,
+	}, nil
 }
 
 // Departures gets train departures from specified station
@@ -61,7 +66,13 @@ func (lc *LIRRClient) Departures(locationCode string) (*DeparturesResponse, erro
 
 	url := fmt.Sprintf("%s?%s", LIRRDepartureURL, v.Encode())
 
-	resp, err := lc.client.Get(url)
+	req, err := http.NewRequest("GET", url, nil)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to create new HTTP request")
+	}
+	req.Header.Add("User-Agent", lc.userAgent)
+
+	resp, err := lc.client.Do(req)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to send Departures request")
 	}

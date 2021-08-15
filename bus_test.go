@@ -12,18 +12,18 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-func TestBusErrAPIKeyRequired(t *testing.T) {
-	_, err := NewBusTimeClient("", nil)
-	require.Error(t, err, ErrAPIKeyRequired)
-}
-
 func TestBusErrClientRequired(t *testing.T) {
-	_, err := NewBusTimeClient("apiKey", nil)
+	_, err := NewBusTimeClient(nil, "", "")
 	require.Error(t, err, ErrClientRequired)
 }
 
+func TestBusErrAPIKeyRequired(t *testing.T) {
+	_, err := NewBusTimeClient(mockClient{}, "", "")
+	require.Error(t, err, ErrAPIKeyRequired)
+}
+
 func TestGetStopMonitoring(t *testing.T) {
-	GetFunc = func(url string) (*http.Response, error) {
+	DoFunc = func(req *http.Request) (*http.Response, error) {
 		json := `{
 			"Siri": {
 				"ServiceDelivery": {
@@ -64,7 +64,7 @@ func TestGetStopMonitoring(t *testing.T) {
 			Body:       ioutil.NopCloser(bytes.NewReader([]byte(json))),
 		}, nil
 	}
-	c, err := NewBusTimeClient("apiKey", mockClient{})
+	c, err := NewBusTimeClient(mockClient{}, "apiKey", "")
 	require.NoError(t, err)
 
 	resp, err := c.GetStopMonitoring("404847")
@@ -104,7 +104,7 @@ func TestGetStopMonitoring(t *testing.T) {
 }
 
 func TestGetStopMonitoringErrAPIKeyNotAuthorized(t *testing.T) {
-	GetFunc = func(url string) (*http.Response, error) {
+	DoFunc = func(req *http.Request) (*http.Response, error) {
 		json := `{
 			"Siri": {
 				"ServiceDelivery": {
@@ -128,14 +128,14 @@ func TestGetStopMonitoringErrAPIKeyNotAuthorized(t *testing.T) {
 			Body:       ioutil.NopCloser(bytes.NewReader([]byte(json))),
 		}, nil
 	}
-	c, _ := NewBusTimeClient("apiKey", mockClient{})
+	c, _ := NewBusTimeClient(mockClient{}, "apiKey", "")
 
 	_, err := c.GetStopMonitoring("404847")
 	require.Error(t, err, ErrAPIKeyNotAuthorized)
 }
 
 func TestGetStopMonitoringErrAPIKeyRequired2(t *testing.T) {
-	GetFunc = func(url string) (*http.Response, error) {
+	DoFunc = func(req *http.Request) (*http.Response, error) {
 		json := `{
 			"Siri": {
 				"ServiceDelivery": {
@@ -159,17 +159,17 @@ func TestGetStopMonitoringErrAPIKeyRequired2(t *testing.T) {
 			Body:       ioutil.NopCloser(bytes.NewReader([]byte(json))),
 		}, nil
 	}
-	c, _ := NewBusTimeClient("apiKey", mockClient{})
+	c, _ := NewBusTimeClient(mockClient{}, "apiKey", "")
 
 	_, err := c.GetStopMonitoring("404847")
 	require.Error(t, err, "API key required.")
 }
 
 func TestGetStopMonitoringErrRequestSend(t *testing.T) {
-	GetFunc = func(url string) (*http.Response, error) {
+	DoFunc = func(req *http.Request) (*http.Response, error) {
 		return nil, net.UnknownNetworkError("...")
 	}
-	c, _ := NewBusTimeClient("apiKey", mockClient{})
+	c, _ := NewBusTimeClient(mockClient{}, "apiKey", "")
 
 	_, err := c.GetStopMonitoring("404847")
 	require.Error(t, err, "failed to send GetStopMonitoring request: unknown network ...")
@@ -180,26 +180,26 @@ func TestGetStopMonitoringErrReadBody(t *testing.T) {
 	mockReadCloser.On("Read", mock.AnythingOfType("[]uint8")).Return(0, fmt.Errorf("error reading"))
 	mockReadCloser.On("Close").Return(nil)
 
-	GetFunc = func(url string) (*http.Response, error) {
+	DoFunc = func(req *http.Request) (*http.Response, error) {
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       &mockReadCloser,
 		}, nil
 	}
-	c, _ := NewBusTimeClient("apiKey", mockClient{})
+	c, _ := NewBusTimeClient(mockClient{}, "apiKey", "")
 
 	_, err := c.GetStopMonitoring("404847")
 	require.Error(t, err, "failed to parse GetStopMonitoring response: error reading")
 }
 
 func TestGetStopMonitoringErrBadResponse(t *testing.T) {
-	GetFunc = func(url string) (*http.Response, error) {
+	DoFunc = func(req *http.Request) (*http.Response, error) {
 		return &http.Response{
 			StatusCode: http.StatusOK,
 			Body:       ioutil.NopCloser(bytes.NewReader([]byte("not JSON"))),
 		}, nil
 	}
-	c, _ := NewBusTimeClient("apiKey", mockClient{})
+	c, _ := NewBusTimeClient(mockClient{}, "apiKey", "")
 
 	_, err := c.GetStopMonitoring("404847")
 	require.Error(t, err, "failed to parse GetStopMonitoring response: invalid character 'o' in literal null (expecting 'u'), body: not JSON")

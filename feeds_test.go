@@ -19,14 +19,14 @@ func str(v string) *string {
 	return &v
 }
 
-func TestFeedsErrAPIKeyRequired(t *testing.T) {
-	_, err := NewFeedsClient("", nil)
-	require.Error(t, err, ErrAPIKeyRequired)
+func TestFeedsErrClientRequired(t *testing.T) {
+	_, err := NewFeedsClient(nil, "", "")
+	require.Error(t, err, ErrClientRequired)
 }
 
-func TestFeedsErrClientRequired(t *testing.T) {
-	_, err := NewFeedsClient("apiKey", nil)
-	require.Error(t, err, ErrClientRequired)
+func TestFeedsErrAPIKeyRequired(t *testing.T) {
+	_, err := NewFeedsClient(mockClient{}, "", "")
+	require.Error(t, err, ErrAPIKeyRequired)
 }
 
 func TestGetFeedMessage(t *testing.T) {
@@ -62,7 +62,7 @@ func TestGetFeedMessage(t *testing.T) {
 			Body:       ioutil.NopCloser(bytes.NewReader(b)),
 		}, nil
 	}
-	c, err := NewFeedsClient("apiKey", mockClient{})
+	c, err := NewFeedsClient(mockClient{}, "apiKey", "")
 	require.NoError(t, err)
 
 	feedMessage, err := c.GetFeedMessage(Feed123456S)
@@ -74,7 +74,7 @@ func TestGetFeedMessageErrRequestSend(t *testing.T) {
 	DoFunc = func(req *http.Request) (*http.Response, error) {
 		return nil, net.UnknownNetworkError("...")
 	}
-	c, _ := NewFeedsClient("apiKey", mockClient{})
+	c, _ := NewFeedsClient(mockClient{}, "apiKey", "")
 
 	_, err := c.GetFeedMessage(Feed123456S)
 	require.Error(t, err, "failed to send GET request: unknown network ...")
@@ -91,7 +91,7 @@ func TestGetFeedMessageErrReadBody(t *testing.T) {
 			Body:       &mockReadCloser,
 		}, nil
 	}
-	c, _ := NewFeedsClient("apiKey", mockClient{})
+	c, _ := NewFeedsClient(mockClient{}, "apiKey", "")
 
 	_, err := c.GetFeedMessage(Feed123456S)
 	require.Error(t, err, "read response body: error reading")
@@ -104,7 +104,7 @@ func TestGetFeedMessageErrBadResponse(t *testing.T) {
 			Body:       ioutil.NopCloser(bytes.NewReader([]byte("not Protobuf"))),
 		}, nil
 	}
-	c, _ := NewFeedsClient("apiKey", mockClient{})
+	c, _ := NewFeedsClient(mockClient{}, "apiKey", "")
 
 	_, err := c.GetFeedMessage(Feed123456S)
 	require.Error(t, err, "failed to unmarshall GTFS Realtime Feed Message")
