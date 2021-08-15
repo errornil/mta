@@ -5,8 +5,9 @@ import (
 	"net/http"
 	"time"
 
-	mta "github.com/chuhlomin/mta/v2"
 	"github.com/pkg/errors"
+
+	"github.com/errornil/mta/v2"
 )
 
 func main() {

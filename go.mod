@@ -1,4 +1,4 @@
-module github.com/chuhlomin/mta/v2
+module github.com/errornil/mta/v2
 
 go 1.13
 

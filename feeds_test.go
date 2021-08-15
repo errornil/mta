@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/chuhlomin/mta/v2/transit_realtime"
+	"github.com/errornil/mta/v2/transit_realtime"
 )
 
 func str(v string) *string {

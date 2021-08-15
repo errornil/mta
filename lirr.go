@@ -59,7 +59,7 @@ func NewLIRRClient(client HTTPClient, userAgent string) (*LIRRClient, error) {
 //   "NYK" for NY-Penn Station
 //   "ATL" for Brooklyn-Atlantic Term
 //   "HVL" for Hicksville
-// Full list of codes: https://github.com/chuhlomin/mta/blob/master/lirr.md
+// Full list of codes: https://github.com/errornil/mta/blob/master/lirr.md
 func (lc *LIRRClient) Departures(locationCode string) (*DeparturesResponse, error) {
 	v := url.Values{}
 	v.Add("loc", locationCode)

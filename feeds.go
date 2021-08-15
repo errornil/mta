@@ -9,7 +9,7 @@ import (
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
 
-	gtfs "github.com/chuhlomin/mta/v2/transit_realtime"
+	gtfs "github.com/errornil/mta/v2/transit_realtime"
 )
 
 type Feed string
