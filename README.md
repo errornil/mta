@@ -1,5 +1,7 @@
 # mta
 
+[![main](https://github.com/errornil/mta/actions/workflows/main.yml/badge.svg)](https://github.com/errornil/mta/actions/workflows/main.yml)
+
 `mta` is the library that provides an interface to MTA Real-Time Data Feeds.
 
 ## Subway (GTFS-realtime feeds)
