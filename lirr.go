@@ -4,27 +4,25 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"net/url"
-	"time"
 
 	"github.com/pkg/errors"
 )
 
-const lirrDepartureURL = "https://traintime.lirr.org/api/Departure"
+const LIRRDepartureURL = "https://traintime.lirr.org/api/Departure"
 
 type LIRRService interface {
 	Departures(locationCode string) (*DeparturesResponse, error)
 }
 
 type LIRRClient struct {
-	client *http.Client
+	client HTTPClient
 }
 
 type DeparturesResponse struct {
 	Location string                    `json:"LOC"`    // The three-letter code for that station, e.g.: JAM
 	Time     string                    `json:"TIME"`   // The date and time the feed was returned at in mm/dd/yyyy hh:mm:ss format (24-hr time)
-	Tranis   []DeparturesResponseTrain `json:"TRAINS"` // Countdown items for each arriving train
+	Trains   []DeparturesResponseTrain `json:"TRAINS"` // Countdown items for each arriving train
 }
 
 // DeparturesResponseTrain - part of DeparturesResponse
@@ -43,41 +41,41 @@ type DeparturesResponseTrain struct {
 }
 
 // NewLIRRClient creates new LIRRClient
-func NewLIRRClient(timeout time.Duration) *LIRRClient {
-	return &LIRRClient{
-		client: &http.Client{
-			Timeout: timeout,
-		},
+func NewLIRRClient(client HTTPClient) (*LIRRClient, error) {
+	if client == nil {
+		return nil, ErrClientRequired
 	}
+
+	return &LIRRClient{client: client}, nil
 }
 
 // Departures gets train departures from specified station
-// locationCore – three-letter code for the station, for example:
+// locationCode – three-letter code for the station, for example:
 //   "NYK" for NY-Penn Station
-//   "ATL" for Brklyn-Atlatnic Term
+//   "ATL" for Brooklyn-Atlantic Term
 //   "HVL" for Hicksville
 // Full list of codes: https://github.com/chuhlomin/mta/blob/master/lirr.md
 func (lc *LIRRClient) Departures(locationCode string) (*DeparturesResponse, error) {
 	v := url.Values{}
 	v.Add("loc", locationCode)
 
-	url := fmt.Sprintf("%s?%s", lirrDepartureURL, v.Encode())
+	url := fmt.Sprintf("%s?%s", LIRRDepartureURL, v.Encode())
 
 	resp, err := lc.client.Get(url)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to send GetStopMonitoring request")
+		return nil, errors.Wrap(err, "failed to send Departures request")
 	}
 	defer resp.Body.Close()
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
-		return nil, errors.Wrap(err, "failed to read GetStopMonitoring response")
+		return nil, errors.Wrap(err, "failed to read Departures response")
 	}
 
 	response := DeparturesResponse{}
 	err = json.Unmarshal(body, &response)
 	if err != nil {
-		return nil, errors.Wrapf(err, "failed to parse GetStopMonitoring response body: %s", body)
+		return nil, errors.Wrapf(err, "failed to parse Departures response body: %s", body)
 	}
 
 	return &response, nil

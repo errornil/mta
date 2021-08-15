@@ -14,6 +14,8 @@ type ServiceDelivery struct {
 
 	// SIRI container for VehicleMonitoring response data
 	StopMonitoringDelivery []StopMonitoringDelivery
+
+	VehicleMonitoringDelivery []VehicleMonitoringDelivery
 }
 
 type StopMonitoringDelivery struct {
@@ -25,6 +27,22 @@ type StopMonitoringDelivery struct {
 
 	// SIRI container for data about a particular vehicle service the selected stop
 	MonitoredStopVisit []MonitoredStopVisit
+}
+
+type VehicleMonitoringDelivery struct {
+	// Required by the SIRI spec
+	ResponseTimestamp string
+
+	ErrorCondition ErrorCondition
+}
+
+type ErrorCondition struct {
+	OtherError  OtherError
+	Description string
+}
+
+type OtherError struct {
+	ErrorText string
 }
 
 type MonitoredStopVisit struct {

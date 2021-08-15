@@ -5,12 +5,11 @@ import (
 	"io/ioutil"
 	"net/http"
 	"net/url"
-	"time"
-
-	gtfs "github.com/chuhlomin/mta/v2/transit_realtime"
-	"github.com/pkg/errors"
 
 	"github.com/golang/protobuf/proto"
+	"github.com/pkg/errors"
+
+	gtfs "github.com/chuhlomin/mta/v2/transit_realtime"
 )
 
 type Feed string
@@ -34,7 +33,7 @@ const (
 	AlertsLIRR   Feed = "camsys/lirr-alerts"   // Long Island Rail Road Alerts
 	AlertsMNR    Feed = "camsys/mnr-alerts"    // Metro-North Railroad Alerts
 
-	feedURL = "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/"
+	FeedURL = "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/"
 )
 
 var (
@@ -68,22 +67,26 @@ type FeedsService interface {
 // Implements FeedsService interface.
 type FeedsClient struct {
 	apiKey string
-	client *http.Client
+	client HTTPClient
 }
 
 // NewFeedsClient creates new FeedsClient
-func NewFeedsClient(apiKey string, timeout time.Duration) *FeedsClient {
+func NewFeedsClient(apiKey string, client HTTPClient) (*FeedsClient, error) {
+	if apiKey == "" {
+		return nil, ErrAPIKeyRequired
+	}
+	if client == nil {
+		return nil, ErrClientRequired
+	}
 	return &FeedsClient{
 		apiKey: apiKey,
-		client: &http.Client{
-			Timeout: timeout,
-		},
-	}
+		client: client,
+	}, nil
 }
 
 // GetFeedMessage sends request to MTA server to get latest GTFS-Realtime data from specified feed
 func (f *FeedsClient) GetFeedMessage(feedID Feed) (*gtfs.FeedMessage, error) {
-	u := fmt.Sprintf("%s%s", feedURL, url.PathEscape(string(feedID)))
+	u := fmt.Sprintf("%s%s", FeedURL, url.PathEscape(string(feedID)))
 	req, err := http.NewRequest("GET", u, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create new HTTP request")

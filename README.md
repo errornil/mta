@@ -13,7 +13,9 @@ import "github.com/chuhlomin/mta"
 
 client := mta.NewSubwayClient(
     "53b2c13dbc574e8cb4bf964dd2a215e253b2c13d", // API Key (this is a fake one)
-    10*time.Seconds, // HTTP client timeout
+    &http.Client{
+        Timeout: 30 * time.Second,
+    },
 )
 
 resp, err := client.GetFeedMessage(mta.Line123456S)
@@ -45,7 +47,9 @@ import "github.com/chuhlomin/mta"
 
 client := mta.NewBusTimeClient(
     "fa05aa30-3c71-4953-91c8-65b46c6e5f78", // API Key (this is a fake one)
-    10*time.Seconds, // HTTP client timeout
+    &http.Client{
+        Timeout: 30 * time.Second,
+    },
 )
 
 resp, err := client.GetStopMonitoring(400933) // 400933 is the stop ID for "AV OF THE AMERICANS/W 34 ST" bus stop

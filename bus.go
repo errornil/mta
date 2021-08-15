@@ -2,17 +2,16 @@ package mta
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"net/url"
-	"time"
 )
 
 type DetailLevel string
 
 const (
-	stopMonitoringURL = "http://bustime.mta.info/api/siri/stop-monitoring.json"
+	StopMonitoringURL = "http://bustime.mta.info/api/siri/stop-monitoring.json"
 
 	minimum DetailLevel = "minimum"
 	basic   DetailLevel = "basic"
@@ -27,16 +26,20 @@ type BusTimeService interface {
 
 type BusTimeClient struct {
 	apiKey string
-	client *http.Client
+	client HTTPClient
 }
 
-func NewBusTimeClient(apiKey string, timeout time.Duration) *BusTimeClient {
+func NewBusTimeClient(apiKey string, client HTTPClient) (*BusTimeClient, error) {
+	if apiKey == "" {
+		return nil, ErrAPIKeyRequired
+	}
+	if client == nil {
+		return nil, ErrClientRequired
+	}
 	return &BusTimeClient{
 		apiKey: apiKey,
-		client: &http.Client{
-			Timeout: timeout,
-		},
-	}
+		client: client,
+	}, nil
 }
 
 func (c *BusTimeClient) GetStopMonitoring(stopID string) (*StopMonitoringResponse, error) {
@@ -51,7 +54,7 @@ func (c *BusTimeClient) GetStopMonitoringWithDetailLevel(stopID string, detailLe
 	v.Add("MonitoringRef", stopID)
 	v.Add("StopMonitoringDetailLevel", string(detailLevel))
 
-	url := fmt.Sprintf("%s?%s", stopMonitoringURL, v.Encode())
+	url := fmt.Sprintf("%s?%s", StopMonitoringURL, v.Encode())
 
 	resp, err := c.client.Get(url)
 	if err != nil {
@@ -68,6 +71,14 @@ func (c *BusTimeClient) GetStopMonitoringWithDetailLevel(stopID string, detailLe
 	err = json.Unmarshal(body, &response)
 	if err != nil {
 		return nil, fmt.Errorf("failed to parse GetStopMonitoring response: %v, body: %s", err, body)
+	}
+
+	if len(response.Siri.ServiceDelivery.VehicleMonitoringDelivery) > 0 {
+		message := response.Siri.ServiceDelivery.VehicleMonitoringDelivery[0].ErrorCondition.Description
+		if message == "API key is not authorized." {
+			return &response, ErrAPIKeyNotAuthorized
+		}
+		return &response, errors.New(message)
 	}
 
 	return &response, nil
