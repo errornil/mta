@@ -60,7 +60,7 @@ func (c *BusTimeClient) GetStopMonitoringWithDetailLevel(stopID string, detailLe
 
 	url := fmt.Sprintf("%s?%s", StopMonitoringURL, v.Encode())
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create new HTTP request")
 	}
@@ -71,6 +71,10 @@ func (c *BusTimeClient) GetStopMonitoringWithDetailLevel(stopID string, detailLe
 		return nil, fmt.Errorf("failed to send GetStopMonitoring request: %v", err)
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("non 200 response status: %v", resp.Status)
+	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {

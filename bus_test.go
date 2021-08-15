@@ -14,12 +14,14 @@ import (
 
 func TestBusErrClientRequired(t *testing.T) {
 	_, err := NewBusTimeClient(nil, "", "")
-	require.Error(t, err, ErrClientRequired)
+	require.Error(t, err)
+	require.Equal(t, ErrClientRequired, err)
 }
 
 func TestBusErrAPIKeyRequired(t *testing.T) {
 	_, err := NewBusTimeClient(mockClient{}, "", "")
-	require.Error(t, err, ErrAPIKeyRequired)
+	require.Error(t, err)
+	require.Equal(t, ErrAPIKeyRequired, err)
 }
 
 func TestGetStopMonitoring(t *testing.T) {
@@ -131,7 +133,8 @@ func TestGetStopMonitoringErrAPIKeyNotAuthorized(t *testing.T) {
 	c, _ := NewBusTimeClient(mockClient{}, "apiKey", "")
 
 	_, err := c.GetStopMonitoring("404847")
-	require.Error(t, err, ErrAPIKeyNotAuthorized)
+	require.Error(t, err)
+	require.Equal(t, ErrAPIKeyNotAuthorized, err)
 }
 
 func TestGetStopMonitoringErrAPIKeyRequired2(t *testing.T) {
@@ -162,7 +165,8 @@ func TestGetStopMonitoringErrAPIKeyRequired2(t *testing.T) {
 	c, _ := NewBusTimeClient(mockClient{}, "apiKey", "")
 
 	_, err := c.GetStopMonitoring("404847")
-	require.Error(t, err, "API key required.")
+	require.Error(t, err)
+	require.Equal(t, "API key required.", err.Error())
 }
 
 func TestGetStopMonitoringErrRequestSend(t *testing.T) {
@@ -172,7 +176,23 @@ func TestGetStopMonitoringErrRequestSend(t *testing.T) {
 	c, _ := NewBusTimeClient(mockClient{}, "apiKey", "")
 
 	_, err := c.GetStopMonitoring("404847")
-	require.Error(t, err, "failed to send GetStopMonitoring request: unknown network ...")
+	require.Error(t, err)
+	require.Equal(t, "failed to send GetStopMonitoring request: unknown network ...", err.Error())
+}
+
+func TestGetStopMonitoringErrNon200(t *testing.T) {
+	DoFunc = func(req *http.Request) (*http.Response, error) {
+		return &http.Response{
+			Status:     "500 Internal Server Error",
+			StatusCode: http.StatusInternalServerError,
+			Body:       ioutil.NopCloser(bytes.NewReader([]byte("..."))),
+		}, nil
+	}
+	c, _ := NewBusTimeClient(mockClient{}, "apiKey", "")
+
+	_, err := c.GetStopMonitoring("404847")
+	require.Error(t, err)
+	require.Equal(t, "non 200 response status: 500 Internal Server Error", err.Error())
 }
 
 func TestGetStopMonitoringErrReadBody(t *testing.T) {
@@ -189,7 +209,8 @@ func TestGetStopMonitoringErrReadBody(t *testing.T) {
 	c, _ := NewBusTimeClient(mockClient{}, "apiKey", "")
 
 	_, err := c.GetStopMonitoring("404847")
-	require.Error(t, err, "failed to parse GetStopMonitoring response: error reading")
+	require.Error(t, err)
+	require.Equal(t, "failed to read GetStopMonitoring response: error reading", err.Error())
 }
 
 func TestGetStopMonitoringErrBadResponse(t *testing.T) {

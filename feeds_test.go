@@ -21,12 +21,14 @@ func str(v string) *string {
 
 func TestFeedsErrClientRequired(t *testing.T) {
 	_, err := NewFeedsClient(nil, "", "")
-	require.Error(t, err, ErrClientRequired)
+	require.Error(t, err)
+	require.Equal(t, ErrClientRequired, err)
 }
 
 func TestFeedsErrAPIKeyRequired(t *testing.T) {
 	_, err := NewFeedsClient(mockClient{}, "", "")
-	require.Error(t, err, ErrAPIKeyRequired)
+	require.Error(t, err)
+	require.Equal(t, ErrAPIKeyRequired, err)
 }
 
 func TestGetFeedMessage(t *testing.T) {
@@ -77,7 +79,23 @@ func TestGetFeedMessageErrRequestSend(t *testing.T) {
 	c, _ := NewFeedsClient(mockClient{}, "apiKey", "")
 
 	_, err := c.GetFeedMessage(Feed123456S)
-	require.Error(t, err, "failed to send GET request: unknown network ...")
+	require.Error(t, err)
+	require.Equal(t, "failed to send GET request: unknown network ...", err.Error())
+}
+
+func TestGetFeedMessageErrNon200(t *testing.T) {
+	DoFunc = func(req *http.Request) (*http.Response, error) {
+		return &http.Response{
+			Status:     "500 Internal Server Error",
+			StatusCode: http.StatusInternalServerError,
+			Body:       ioutil.NopCloser(bytes.NewReader([]byte("..."))),
+		}, nil
+	}
+	c, _ := NewFeedsClient(mockClient{}, "apiKey", "")
+
+	_, err := c.GetFeedMessage(Feed123456S)
+	require.Error(t, err)
+	require.Equal(t, "non 200 response status: 500 Internal Server Error", err.Error())
 }
 
 func TestGetFeedMessageErrReadBody(t *testing.T) {
@@ -94,7 +112,8 @@ func TestGetFeedMessageErrReadBody(t *testing.T) {
 	c, _ := NewFeedsClient(mockClient{}, "apiKey", "")
 
 	_, err := c.GetFeedMessage(Feed123456S)
-	require.Error(t, err, "read response body: error reading")
+	require.Error(t, err)
+	require.Equal(t, "failed to read response body: error reading", err.Error())
 }
 
 func TestGetFeedMessageErrBadResponse(t *testing.T) {
@@ -107,5 +126,6 @@ func TestGetFeedMessageErrBadResponse(t *testing.T) {
 	c, _ := NewFeedsClient(mockClient{}, "apiKey", "")
 
 	_, err := c.GetFeedMessage(Feed123456S)
-	require.Error(t, err, "failed to unmarshall GTFS Realtime Feed Message")
+	require.Error(t, err)
+	require.Equal(t, "failed to unmarshall GTFS Realtime Feed Message: proto: can't skip unknown wire type 6", err.Error())
 }

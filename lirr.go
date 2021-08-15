@@ -66,7 +66,7 @@ func (lc *LIRRClient) Departures(locationCode string) (*DeparturesResponse, erro
 
 	url := fmt.Sprintf("%s?%s", LIRRDepartureURL, v.Encode())
 
-	req, err := http.NewRequest("GET", url, nil)
+	req, err := http.NewRequest(http.MethodGet, url, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create new HTTP request")
 	}
@@ -77,6 +77,10 @@ func (lc *LIRRClient) Departures(locationCode string) (*DeparturesResponse, erro
 		return nil, errors.Wrap(err, "failed to send Departures request")
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("non 200 response status: %v", resp.Status)
+	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {

@@ -89,7 +89,7 @@ func NewFeedsClient(client HTTPClient, apiKey, userAgent string) (*FeedsClient, 
 // GetFeedMessage sends request to MTA server to get latest GTFS-Realtime data from specified feed
 func (f *FeedsClient) GetFeedMessage(feedID Feed) (*gtfs.FeedMessage, error) {
 	u := fmt.Sprintf("%s%s", FeedURL, url.PathEscape(string(feedID)))
-	req, err := http.NewRequest("GET", u, nil)
+	req, err := http.NewRequest(http.MethodGet, u, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create new HTTP request")
 	}
@@ -101,6 +101,10 @@ func (f *FeedsClient) GetFeedMessage(feedID Feed) (*gtfs.FeedMessage, error) {
 		return nil, errors.Wrap(err, "failed to send GET request")
 	}
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("non 200 response status: %v", resp.Status)
+	}
 
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {

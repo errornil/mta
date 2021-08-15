@@ -18,7 +18,8 @@ func b(v bool) *bool {
 
 func TestLIRRErrClientRequired(t *testing.T) {
 	_, err := NewLIRRClient(nil, "")
-	require.Error(t, err, ErrClientRequired)
+	require.Error(t, err)
+	require.Equal(t, ErrClientRequired, err)
 }
 
 func TestDepartures(t *testing.T) {
@@ -91,7 +92,24 @@ func TestDeparturesErrRequestSend(t *testing.T) {
 	require.NoError(t, err)
 
 	_, err = c.Departures("NYK")
-	require.Error(t, err, "failed to send Departures request: unknown network ...")
+	require.Error(t, err)
+	require.Equal(t, "failed to send Departures request: unknown network ...", err.Error())
+}
+
+func TestDeparturesErrNon200(t *testing.T) {
+	DoFunc = func(req *http.Request) (*http.Response, error) {
+		return &http.Response{
+			Status:     "500 Internal Server Error",
+			StatusCode: http.StatusInternalServerError,
+			Body:       ioutil.NopCloser(bytes.NewReader([]byte("..."))),
+		}, nil
+	}
+	c, err := NewLIRRClient(mockClient{}, "")
+	require.NoError(t, err)
+
+	_, err = c.Departures("NYK")
+	require.Error(t, err)
+	require.Equal(t, "non 200 response status: 500 Internal Server Error", err.Error())
 }
 
 func TestDeparturesErrReadBody(t *testing.T) {
@@ -110,7 +128,8 @@ func TestDeparturesErrReadBody(t *testing.T) {
 	require.NoError(t, err)
 
 	_, err = c.Departures("NYK")
-	require.Error(t, err, "read response body: error reading")
+	require.Error(t, err)
+	require.Equal(t, "failed to read Departures response: error reading", err.Error())
 }
 
 func TestDeparturesErrBadResponse(t *testing.T) {
@@ -125,5 +144,6 @@ func TestDeparturesErrBadResponse(t *testing.T) {
 	require.NoError(t, err)
 
 	_, err = c.Departures("NYK")
-	require.Error(t, err, "failed to parse Departures response body: invalid character 'o' in literal null (expecting 'u'), body: not JSON")
+	require.Error(t, err)
+	require.Equal(t, "failed to parse Departures response body: not JSON: invalid character 'o' in literal null (expecting 'u')", err.Error())
 }
