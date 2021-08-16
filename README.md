@@ -13,7 +13,7 @@
 ```go
 import "github.com/errornil/mta/v2"
 
-client := mta.NewSubwayClient(
+client, err := mta.NewSubwayClient(
     &http.Client{
         Timeout: 30 * time.Second,
     },
@@ -48,7 +48,7 @@ protoc --go_out=../transit_realtime gtfs-realtime.proto nyct-subway.proto
 ```go
 import "github.com/errornil/mta/v2"
 
-client := mta.NewBusTimeClient(
+client, err := mta.NewBusTimeClient(
     &http.Client{
         Timeout: 30 * time.Second,
     },
