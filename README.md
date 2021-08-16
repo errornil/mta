@@ -11,7 +11,7 @@
 ### Example
 
 ```go
-import "github.com/errornil/mta"
+import "github.com/errornil/mta/v2"
 
 client := mta.NewSubwayClient(
     &http.Client{
@@ -46,7 +46,7 @@ protoc --go_out=../transit_realtime gtfs-realtime.proto nyct-subway.proto
 ### Example
 
 ```go
-import "github.com/errornil/mta"
+import "github.com/errornil/mta/v2"
 
 client := mta.NewBusTimeClient(
     &http.Client{
