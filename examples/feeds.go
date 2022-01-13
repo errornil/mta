@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"log"
 	"net/http"
 	"time"
@@ -17,11 +18,17 @@ func main() {
 }
 
 func run() error {
+	apiKey := flag.String("key", "", "API key")
+	flag.Parse()
+	if *apiKey == "" {
+		return errors.New("missing API key, pass it with -key flag")
+	}
+
 	client, err := mta.NewFeedsClient(
 		&http.Client{
 			Timeout: 30 * time.Second,
 		},
-		"lKTSZpn9bX58Nmg11rHhX1dsKaBpoFakmMSuqeh0",
+		*apiKey,
 		"github.com/errornil/mta:v2.0",
 	)
 	if err != nil {
