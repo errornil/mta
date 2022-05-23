@@ -52,7 +52,7 @@ func TestDepartures(t *testing.T) {
 		}, nil
 	}
 
-	c, err := NewLIRRClient(mockClient{}, "")
+	c, err := NewLIRRClient(&mockClient{}, "")
 	require.NoError(t, err)
 
 	d, err := c.Departures("NYK")
@@ -88,7 +88,7 @@ func TestDeparturesErrRequestSend(t *testing.T) {
 		return nil, net.UnknownNetworkError("...")
 	}
 
-	c, err := NewLIRRClient(mockClient{}, "")
+	c, err := NewLIRRClient(&mockClient{}, "")
 	require.NoError(t, err)
 
 	_, err = c.Departures("NYK")
@@ -104,7 +104,7 @@ func TestDeparturesErrNon200(t *testing.T) {
 			Body:       ioutil.NopCloser(bytes.NewReader([]byte("..."))),
 		}, nil
 	}
-	c, err := NewLIRRClient(mockClient{}, "")
+	c, err := NewLIRRClient(&mockClient{}, "")
 	require.NoError(t, err)
 
 	_, err = c.Departures("NYK")
@@ -124,7 +124,7 @@ func TestDeparturesErrReadBody(t *testing.T) {
 		}, nil
 	}
 
-	c, err := NewLIRRClient(mockClient{}, "")
+	c, err := NewLIRRClient(&mockClient{}, "")
 	require.NoError(t, err)
 
 	_, err = c.Departures("NYK")
@@ -140,7 +140,7 @@ func TestDeparturesErrBadResponse(t *testing.T) {
 		}, nil
 	}
 
-	c, err := NewLIRRClient(mockClient{}, "")
+	c, err := NewLIRRClient(&mockClient{}, "")
 	require.NoError(t, err)
 
 	_, err = c.Departures("NYK")

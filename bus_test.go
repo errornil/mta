@@ -19,7 +19,7 @@ func TestBusErrClientRequired(t *testing.T) {
 }
 
 func TestBusErrAPIKeyRequired(t *testing.T) {
-	_, err := NewBusTimeClient(mockClient{}, "", "")
+	_, err := NewBusTimeClient(&mockClient{}, "", "")
 	require.Error(t, err)
 	require.Equal(t, ErrAPIKeyRequired, err)
 }
@@ -66,7 +66,7 @@ func TestGetStopMonitoring(t *testing.T) {
 			Body:       ioutil.NopCloser(bytes.NewReader([]byte(json))),
 		}, nil
 	}
-	c, err := NewBusTimeClient(mockClient{}, "apiKey", "")
+	c, err := NewBusTimeClient(&mockClient{}, "apiKey", "")
 	require.NoError(t, err)
 
 	resp, err := c.GetStopMonitoring("404847")
@@ -130,7 +130,7 @@ func TestGetStopMonitoringErrAPIKeyNotAuthorized(t *testing.T) {
 			Body:       ioutil.NopCloser(bytes.NewReader([]byte(json))),
 		}, nil
 	}
-	c, _ := NewBusTimeClient(mockClient{}, "apiKey", "")
+	c, _ := NewBusTimeClient(&mockClient{}, "apiKey", "")
 
 	_, err := c.GetStopMonitoring("404847")
 	require.Error(t, err)
@@ -162,7 +162,7 @@ func TestGetStopMonitoringErrAPIKeyRequired2(t *testing.T) {
 			Body:       ioutil.NopCloser(bytes.NewReader([]byte(json))),
 		}, nil
 	}
-	c, _ := NewBusTimeClient(mockClient{}, "apiKey", "")
+	c, _ := NewBusTimeClient(&mockClient{}, "apiKey", "")
 
 	_, err := c.GetStopMonitoring("404847")
 	require.Error(t, err)
@@ -173,7 +173,7 @@ func TestGetStopMonitoringErrRequestSend(t *testing.T) {
 	DoFunc = func(req *http.Request) (*http.Response, error) {
 		return nil, net.UnknownNetworkError("...")
 	}
-	c, _ := NewBusTimeClient(mockClient{}, "apiKey", "")
+	c, _ := NewBusTimeClient(&mockClient{}, "apiKey", "")
 
 	_, err := c.GetStopMonitoring("404847")
 	require.Error(t, err)
@@ -188,7 +188,7 @@ func TestGetStopMonitoringErrNon200(t *testing.T) {
 			Body:       ioutil.NopCloser(bytes.NewReader([]byte("..."))),
 		}, nil
 	}
-	c, _ := NewBusTimeClient(mockClient{}, "apiKey", "")
+	c, _ := NewBusTimeClient(&mockClient{}, "apiKey", "")
 
 	_, err := c.GetStopMonitoring("404847")
 	require.Error(t, err)
@@ -206,7 +206,7 @@ func TestGetStopMonitoringErrReadBody(t *testing.T) {
 			Body:       &mockReadCloser,
 		}, nil
 	}
-	c, _ := NewBusTimeClient(mockClient{}, "apiKey", "")
+	c, _ := NewBusTimeClient(&mockClient{}, "apiKey", "")
 
 	_, err := c.GetStopMonitoring("404847")
 	require.Error(t, err)
@@ -220,7 +220,7 @@ func TestGetStopMonitoringErrBadResponse(t *testing.T) {
 			Body:       ioutil.NopCloser(bytes.NewReader([]byte("not JSON"))),
 		}, nil
 	}
-	c, _ := NewBusTimeClient(mockClient{}, "apiKey", "")
+	c, _ := NewBusTimeClient(&mockClient{}, "apiKey", "")
 
 	_, err := c.GetStopMonitoring("404847")
 	require.Error(t, err, "failed to parse GetStopMonitoring response: invalid character 'o' in literal null (expecting 'u'), body: not JSON")
