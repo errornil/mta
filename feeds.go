@@ -2,14 +2,14 @@ package mta
 
 import (
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"net/url"
 
 	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
 
-	gtfs "github.com/errornil/mta/v2/transit_realtime"
+	gtfs "github.com/errornil/mta/v3/transit_realtime"
 )
 
 type Feed string
@@ -34,6 +34,12 @@ const (
 	AlertsMNR    Feed = "camsys/mnr-alerts"    // Metro-North Railroad Alerts
 
 	FeedURL = "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/"
+
+	FeedBusTripUpdates      Feed = "tripUpdates"
+	FeedBusVehiclePositions Feed = "vehiclePositions"
+	FeedBusAlerts           Feed = "alerts"
+
+	FeedURLBus = "http://gtfsrt.prod.obanyc.com/"
 )
 
 var (
@@ -48,6 +54,13 @@ var (
 		FeedJZ,
 		Feed7,
 	}
+
+	BusFeeds []Feed = []Feed{
+		FeedBusTripUpdates,
+		FeedBusVehiclePositions,
+		FeedBusAlerts,
+	}
+
 	AllFeeds []Feed = append(SubwayFeeds, FeedLIRR, FeedMNR)
 
 	AllAlerts []Feed = []Feed{
@@ -66,35 +79,38 @@ type FeedsService interface {
 // FeedsClient provides MTA GTFS-Realtime data
 // Implements FeedsService interface.
 type FeedsClient struct {
-	client    HTTPClient
-	apiKey    string
-	userAgent string
+	client      HTTPClient
+	feedsApiKey string
+	busApiKey   string
+	userAgent   string
 }
 
 // NewFeedsClient creates new FeedsClient
-func NewFeedsClient(client HTTPClient, apiKey, userAgent string) (*FeedsClient, error) {
+func NewFeedsClient(client HTTPClient, feedsApiKey, busApiKey, userAgent string) (*FeedsClient, error) {
 	if client == nil {
 		return nil, ErrClientRequired
 	}
-	if apiKey == "" {
-		return nil, ErrAPIKeyRequired
-	}
 	return &FeedsClient{
-		client:    client,
-		apiKey:    apiKey,
-		userAgent: userAgent,
+		client:      client,
+		feedsApiKey: feedsApiKey,
+		busApiKey:   busApiKey,
+		userAgent:   userAgent,
 	}, nil
 }
 
 // GetFeedMessage sends request to MTA server to get latest GTFS-Realtime data from specified feed
 func (f *FeedsClient) GetFeedMessage(feedID Feed) (*gtfs.FeedMessage, error) {
-	u := fmt.Sprintf("%s%s", FeedURL, url.PathEscape(string(feedID)))
-	req, err := http.NewRequest(http.MethodGet, u, nil)
+	feedURL, key, err := f.buildURL(feedID)
+	if err != nil {
+		return nil, err
+	}
+
+	req, err := http.NewRequest(http.MethodGet, feedURL, nil)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to create new HTTP request")
 	}
 
-	req.Header.Add("x-api-key", f.apiKey)
+	req.Header.Add("x-api-key", key)
 
 	resp, err := f.client.Do(req)
 	if err != nil {
@@ -106,7 +122,7 @@ func (f *FeedsClient) GetFeedMessage(feedID Feed) (*gtfs.FeedMessage, error) {
 		return nil, fmt.Errorf("non 200 response status: %v", resp.Status)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	body, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to read response body")
 	}
@@ -118,4 +134,25 @@ func (f *FeedsClient) GetFeedMessage(feedID Feed) (*gtfs.FeedMessage, error) {
 	}
 
 	return feed, nil
+}
+
+func (f *FeedsClient) buildURL(feedID Feed) (feedURL string, key string, err error) {
+	if isBusFeed(feedID) {
+		feedURL = fmt.Sprintf("%s%s", FeedURLBus, feedID)
+		key = f.busApiKey
+	} else {
+		feedURL = fmt.Sprintf("%s%s", FeedURL, url.PathEscape(string(feedID)))
+		key = f.feedsApiKey
+	}
+
+	if key == "" {
+		err = ErrAPIKeyRequired
+	}
+	return
+}
+
+func isBusFeed(feedID Feed) bool {
+	return feedID == FeedBusTripUpdates ||
+		feedID == FeedBusVehiclePositions ||
+		feedID == FeedBusAlerts
 }

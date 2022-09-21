@@ -8,7 +8,7 @@ import (
 
 	"github.com/pkg/errors"
 
-	"github.com/errornil/mta/v2"
+	"github.com/errornil/mta/v3"
 )
 
 func main() {
@@ -29,13 +29,14 @@ func run() error {
 			Timeout: 30 * time.Second,
 		},
 		*apiKey,
+		"",
 		"github.com/errornil/mta:v2.0",
 	)
 	if err != nil {
 		return errors.Wrap(err, "failed to get feed message")
 	}
 
-	msg, err := client.GetFeedMessage(mta.FeedLIRR)
+	msg, err := client.GetFeedMessage(mta.AlertsSubway)
 	if err != nil {
 		return errors.Wrap(err, "failed to get feed message")
 	}

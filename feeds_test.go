@@ -3,7 +3,7 @@ package mta
 import (
 	"bytes"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"net"
 	"net/http"
 	"testing"
@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
 
-	"github.com/errornil/mta/v2/transit_realtime"
+	"github.com/errornil/mta/v3/transit_realtime"
 )
 
 func str(v string) *string {
@@ -20,13 +20,16 @@ func str(v string) *string {
 }
 
 func TestFeedsErrClientRequired(t *testing.T) {
-	_, err := NewFeedsClient(nil, "", "")
+	_, err := NewFeedsClient(nil, "", "", "")
 	require.Error(t, err)
 	require.Equal(t, ErrClientRequired, err)
 }
 
 func TestFeedsErrAPIKeyRequired(t *testing.T) {
-	_, err := NewFeedsClient(&mockClient{}, "", "")
+	fc, err := NewFeedsClient(&mockClient{}, "", "", "")
+	require.NoError(t, err)
+
+	_, err = fc.GetFeedMessage(Feed(FeedBusTripUpdates))
 	require.Error(t, err)
 	require.Equal(t, ErrAPIKeyRequired, err)
 }
@@ -61,10 +64,10 @@ func TestGetFeedMessage(t *testing.T) {
 		b, _ := proto.Marshal(&msg)
 		return &http.Response{
 			StatusCode: http.StatusOK,
-			Body:       ioutil.NopCloser(bytes.NewReader(b)),
+			Body:       io.NopCloser(bytes.NewReader(b)),
 		}, nil
 	}
-	c, err := NewFeedsClient(&mockClient{}, "apiKey", "")
+	c, err := NewFeedsClient(&mockClient{}, "apiKey", "", "")
 	require.NoError(t, err)
 
 	feedMessage, err := c.GetFeedMessage(Feed123456S)
@@ -76,7 +79,7 @@ func TestGetFeedMessageErrRequestSend(t *testing.T) {
 	DoFunc = func(req *http.Request) (*http.Response, error) {
 		return nil, net.UnknownNetworkError("...")
 	}
-	c, _ := NewFeedsClient(&mockClient{}, "apiKey", "")
+	c, _ := NewFeedsClient(&mockClient{}, "apiKey", "", "")
 
 	_, err := c.GetFeedMessage(Feed123456S)
 	require.Error(t, err)
@@ -88,10 +91,10 @@ func TestGetFeedMessageErrNon200(t *testing.T) {
 		return &http.Response{
 			Status:     "500 Internal Server Error",
 			StatusCode: http.StatusInternalServerError,
-			Body:       ioutil.NopCloser(bytes.NewReader([]byte("..."))),
+			Body:       io.NopCloser(bytes.NewReader([]byte("..."))),
 		}, nil
 	}
-	c, _ := NewFeedsClient(&mockClient{}, "apiKey", "")
+	c, _ := NewFeedsClient(&mockClient{}, "apiKey", "", "")
 
 	_, err := c.GetFeedMessage(Feed123456S)
 	require.Error(t, err)
@@ -109,7 +112,7 @@ func TestGetFeedMessageErrReadBody(t *testing.T) {
 			Body:       &mockReadCloser,
 		}, nil
 	}
-	c, _ := NewFeedsClient(&mockClient{}, "apiKey", "")
+	c, _ := NewFeedsClient(&mockClient{}, "apiKey", "", "")
 
 	_, err := c.GetFeedMessage(Feed123456S)
 	require.Error(t, err)
@@ -120,10 +123,10 @@ func TestGetFeedMessageErrBadResponse(t *testing.T) {
 	DoFunc = func(req *http.Request) (*http.Response, error) {
 		return &http.Response{
 			StatusCode: http.StatusOK,
-			Body:       ioutil.NopCloser(bytes.NewReader([]byte("not Protobuf"))),
+			Body:       io.NopCloser(bytes.NewReader([]byte("not Protobuf"))),
 		}, nil
 	}
-	c, _ := NewFeedsClient(&mockClient{}, "apiKey", "")
+	c, _ := NewFeedsClient(&mockClient{}, "apiKey", "", "")
 
 	_, err := c.GetFeedMessage(Feed123456S)
 	require.Error(t, err)
