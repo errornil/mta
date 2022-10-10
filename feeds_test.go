@@ -130,5 +130,5 @@ func TestGetFeedMessageErrBadResponse(t *testing.T) {
 
 	_, err := c.GetFeedMessage(Feed123456S)
 	require.Error(t, err)
-	require.Equal(t, "failed to unmarshall GTFS Realtime Feed Message: proto: can't skip unknown wire type 6", err.Error())
+	require.Equal(t, "failed to unmarshall GTFS Realtime Feed Message: proto: cannot parse invalid wire-format data", err.Error())
 }
