@@ -1,0 +1,13 @@
+syntax = "proto2";
+
+package lirr;
+option java_package = "com.google.transit.realtime.lirr";
+option go_package = "github.com/errornil/mta/v3/proto/lirr";
+
+import "gtfs-realtime.proto";
+
+message MtaStopTimeUpdate {
+  extend transit_realtime.TripUpdate.StopTimeUpdate {
+    optional string track = 1005;
+  }
+}

@@ -8,11 +8,11 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/golang/protobuf/proto"
 	"github.com/stretchr/testify/mock"
 	"github.com/stretchr/testify/require"
+	"google.golang.org/protobuf/proto"
 
-	"github.com/errornil/mta/v3/transit_realtime"
+	"github.com/errornil/mta/v3/proto/transit_realtime"
 )
 
 func str(v string) *string {

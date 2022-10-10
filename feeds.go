@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"net/url"
 
-	"github.com/golang/protobuf/proto"
 	"github.com/pkg/errors"
+	"google.golang.org/protobuf/proto"
 
-	gtfs "github.com/errornil/mta/v3/transit_realtime"
+	gtfs "github.com/errornil/mta/v3/proto/transit_realtime"
 )
 
 type Feed string

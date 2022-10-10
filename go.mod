@@ -3,9 +3,9 @@ module github.com/errornil/mta/v3
 go 1.18
 
 require (
-	github.com/golang/protobuf v1.3.5
 	github.com/pkg/errors v0.9.1
 	github.com/stretchr/testify v1.7.0
+	google.golang.org/protobuf v1.28.1
 )
 
 require (

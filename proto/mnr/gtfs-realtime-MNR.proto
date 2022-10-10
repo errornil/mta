@@ -1,0 +1,16 @@
+syntax = "proto2";
+
+package mnr;
+option java_package = "com.google.transit.realtime.mnr";
+option go_package = "github.com/errornil/mta/v3/proto/mnr";
+
+import "gtfs-realtime.proto";
+
+message MnrStopTimeUpdate {
+  optional string track = 1; //can add additional fields here without having to //extend StopTimeUpdate again
+  optional string trainStatus = 2;
+}
+
+extend transit_realtime.TripUpdate.StopTimeUpdate {
+  optional MnrStopTimeUpdate mnr_stop_time_update = 1005;
+}
