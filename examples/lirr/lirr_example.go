@@ -5,7 +5,9 @@ import (
 	"flag"
 	"log"
 	"net/http"
+	"strings"
 	"time"
+	"unicode"
 
 	"github.com/pkg/errors"
 	"google.golang.org/protobuf/proto"
@@ -49,7 +51,13 @@ func run() error {
 			// optional MtaStopTimeUpdate
 			var track string
 			track = proto.GetExtension(stopTimeUpdate, lirr.E_MtaStopTimeUpdate_Track).(string)
-			log.Println(track)
+
+			// trim UTF-8 wrapping characters
+			track = strings.TrimFunc(track, func(r rune) bool {
+				return unicode.Is(unicode.Cc, r)
+			})
+
+			log.Printf("%q", track)
 		}
 
 		b, err := json.MarshalIndent(entity, "", "  ")
